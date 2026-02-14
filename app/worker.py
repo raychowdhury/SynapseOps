@@ -4,6 +4,12 @@ from app.models import Job, Artifact, AuditLog
 from app.generators.openapi_gen import generate_openapi
 from app.generators.fastapi_gen import generate_fastapi
 from app.generators.test_gen import generate_tests
+from app.generators.docker_gen import generate_dockerfile, generate_docker_compose, generate_requirements
+from app.generators.db_model_gen import generate_db_models, generate_alembic_migration
+from app.generators.auth_gen import generate_auth_module
+from app.generators.sdk_gen import generate_python_sdk, generate_typescript_sdk
+from app.generators.postman_gen import generate_postman_collection
+from app.generators.cicd_gen import generate_github_actions
 from app.validator import validate_openapi, run_tests
 
 
@@ -22,6 +28,32 @@ def _add_artifact(db, job_id: str, artifact_type: str, content: str):
     db.commit()
 
 
+CORE_PIPELINE = [
+    ("SPEC_GENERATED", [
+        ("openapi_spec", generate_openapi),
+    ]),
+    ("CODE_GENERATED", [
+        ("fastapi_code", generate_fastapi),
+        ("auth_module", generate_auth_module),
+        ("db_models", generate_db_models),
+        ("alembic_migration", generate_alembic_migration),
+    ]),
+    ("TESTS_GENERATED", [
+        ("pytest_tests", generate_tests),
+    ]),
+]
+
+EXTRA_GENERATORS = [
+    ("dockerfile", generate_dockerfile),
+    ("docker_compose", generate_docker_compose),
+    ("requirements_txt", generate_requirements),
+    ("python_sdk", generate_python_sdk),
+    ("typescript_sdk", generate_typescript_sdk),
+    ("postman_collection", generate_postman_collection),
+    ("github_actions", generate_github_actions),
+]
+
+
 def _process_job_sync(job_id: str):
     db = SessionLocal()
     try:
@@ -31,48 +63,46 @@ def _process_job_sync(job_id: str):
 
         input_json = job.input_json
 
-        try:
-            spec_yaml = generate_openapi(input_json)
-            _add_artifact(db, job_id, "openapi_spec", spec_yaml)
-            _update_status(db, job, "SPEC_GENERATED")
-            _log(db, job_id, "OpenAPI spec generated")
-        except Exception as e:
-            _update_status(db, job, "FAILED")
-            _log(db, job_id, f"Spec generation failed: {e}")
-            return
+        for status, gens in CORE_PIPELINE:
+            for artifact_type, gen_fn in gens:
+                try:
+                    content = gen_fn(input_json)
+                    _add_artifact(db, job_id, artifact_type, content)
+                    _log(db, job_id, f"Generated {artifact_type}")
+                except Exception as e:
+                    _update_status(db, job, "FAILED")
+                    _log(db, job_id, f"Failed {artifact_type}: {e}")
+                    return
+            _update_status(db, job, status)
 
-        try:
-            app_code = generate_fastapi(input_json)
-            _add_artifact(db, job_id, "fastapi_code", app_code)
-            _update_status(db, job, "CODE_GENERATED")
-            _log(db, job_id, "FastAPI code generated")
-        except Exception as e:
-            _update_status(db, job, "FAILED")
-            _log(db, job_id, f"Code generation failed: {e}")
-            return
-
-        try:
-            test_code = generate_tests(input_json)
-            _add_artifact(db, job_id, "pytest_tests", test_code)
-            _update_status(db, job, "TESTS_GENERATED")
-            _log(db, job_id, "Pytest tests generated")
-        except Exception as e:
-            _update_status(db, job, "FAILED")
-            _log(db, job_id, f"Test generation failed: {e}")
-            return
-
-        valid, msg = validate_openapi(spec_yaml)
-        _log(db, job_id, msg)
-        if not valid:
-            _update_status(db, job, "FAILED")
-            return
+        spec_art = db.query(Artifact).filter(Artifact.job_id == job_id, Artifact.type == "openapi_spec").first()
+        if spec_art:
+            valid, msg = validate_openapi(spec_art.content)
+            _log(db, job_id, msg)
+            if not valid:
+                _update_status(db, job, "FAILED")
+                return
         _update_status(db, job, "VALIDATED")
 
-        passed, output = run_tests(app_code, test_code)
-        _add_artifact(db, job_id, "test_results", output)
-        _log(db, job_id, f"Tests {'passed' if passed else 'failed'}")
+        app_art = db.query(Artifact).filter(Artifact.job_id == job_id, Artifact.type == "fastapi_code").first()
+        test_art = db.query(Artifact).filter(Artifact.job_id == job_id, Artifact.type == "pytest_tests").first()
+        if app_art and test_art:
+            passed, output = run_tests(app_art.content, test_art.content)
+            _add_artifact(db, job_id, "test_results", output)
+            _log(db, job_id, f"Tests {'passed' if passed else 'failed'}")
+            if not passed:
+                _update_status(db, job, "FAILED")
+                return
 
-        _update_status(db, job, "COMPLETED" if passed else "FAILED")
+        for artifact_type, gen_fn in EXTRA_GENERATORS:
+            try:
+                content = gen_fn(input_json)
+                _add_artifact(db, job_id, artifact_type, content)
+                _log(db, job_id, f"Generated {artifact_type}")
+            except Exception as e:
+                _log(db, job_id, f"Warning: {artifact_type} skipped: {e}")
+
+        _update_status(db, job, "COMPLETED")
 
     except Exception as e:
         try:
