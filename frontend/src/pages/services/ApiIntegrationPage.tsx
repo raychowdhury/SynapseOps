@@ -206,6 +206,35 @@ const connectedSystems = [
   "Operational Databases",
 ];
 
+const integrationSources = ["Shopify", "Webhook Sources", "SaaS Apps"];
+
+const integrationTargets = [
+  "ERP REST APIs",
+  "CRM Platforms",
+  "Payment Gateways",
+  "Data Warehouses",
+  "Operational Databases",
+];
+
+const integrationFlowSteps = [
+  {
+    title: "1. Ingest",
+    description: "Accept webhook or API events with endpoint-level auth and schema checks.",
+  },
+  {
+    title: "2. Normalize",
+    description: "Map source payloads into a deterministic canonical contract.",
+  },
+  {
+    title: "3. Deliver",
+    description: "Route transformed payloads to destination APIs with retries and breaker controls.",
+  },
+  {
+    title: "4. Operate",
+    description: "Track run history, dead letters, and replay failures without data loss.",
+  },
+];
+
 const defaultRealWorldUseCases = [
   {
     scenario: "E-commerce order sync",
@@ -438,6 +467,69 @@ export default function ApiIntegrationPage() {
                   {system}
                 </Badge>
               ))}
+            </div>
+          </div>
+
+          <div className="mb-16">
+            <h2 className="text-xl font-bold tracking-tight mb-3 text-foreground">How it connects</h2>
+            <p className="text-sm text-text-2 mb-5 leading-relaxed">
+              SynapseOps sits between your source events and destination systems, applying auth, mapping, resilience controls,
+              and ops visibility on every API transaction.
+            </p>
+
+            <div className="rounded-2xl border border-border bg-card/60 p-4 md:p-6">
+              <div className="grid gap-4 md:grid-cols-[1fr_auto_1.2fr_auto_1fr] md:items-stretch">
+                <Card className="bg-background/40 border-border">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-text-2 mb-3">Inbound Sources</p>
+                    <div className="space-y-2">
+                      {integrationSources.map((source) => (
+                        <div key={source} className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground">
+                          {source}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="hidden md:flex items-center justify-center text-lg font-bold text-text-2">{"->"}</div>
+
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-primary-light mb-2">SynapseOps API Integration Layer</p>
+                    <div className="space-y-2 text-sm text-foreground">
+                      <p>Auth adapters: API keys, bearer, OAuth2</p>
+                      <p>Mapping engine: schema transform + validation</p>
+                      <p>Resilience: retry, circuit breaker, dead-letter queue</p>
+                      <p>Observability: run history, status, replay controls</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="hidden md:flex items-center justify-center text-lg font-bold text-text-2">{"->"}</div>
+
+                <Card className="bg-background/40 border-border">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-text-2 mb-3">Connected Destinations</p>
+                    <div className="space-y-2">
+                      {integrationTargets.map((target) => (
+                        <div key={target} className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground">
+                          {target}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mt-5 grid gap-2 md:grid-cols-4">
+                {integrationFlowSteps.map((step) => (
+                  <div key={step.title} className="rounded-lg border border-border bg-card px-3 py-2">
+                    <p className="text-xs font-semibold text-foreground mb-1">{step.title}</p>
+                    <p className="text-xs text-text-2 leading-relaxed">{step.description}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
