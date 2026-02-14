@@ -25,8 +25,10 @@ def seed_local_demo_flow(db: Session) -> None:
     if env != "local":
         return
 
+    demo_target_base_url = os.getenv("API_INTEGRATION_DEMO_TARGET_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+
     shopify_connector = _get_or_create_connector(db, "Shopify", "webhook")
-    erp_connector = _get_or_create_connector(db, "ERP", "rest", base_url="http://erp.test")
+    erp_connector = _get_or_create_connector(db, "ERP", "rest", base_url=demo_target_base_url)
 
     credential = (
         db.query(Credential)
@@ -75,10 +77,17 @@ def seed_local_demo_flow(db: Session) -> None:
             name="ERP Create Order",
             direction="outbound",
             method="POST",
-            path="/orders",
+            path="/api/v1/api-integration/mock/erp/orders",
             is_active=True,
         )
         db.add(target_endpoint)
+        db.commit()
+        db.refresh(target_endpoint)
+    else:
+        target_endpoint.direction = "outbound"
+        target_endpoint.method = "POST"
+        target_endpoint.path = "/api/v1/api-integration/mock/erp/orders"
+        target_endpoint.is_active = True
         db.commit()
         db.refresh(target_endpoint)
 

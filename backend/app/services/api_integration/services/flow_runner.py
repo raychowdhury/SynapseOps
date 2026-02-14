@@ -31,6 +31,15 @@ class FlowRunner:
 
         return await self.run_flow(db, flow, source_payload, request_id)
 
+    async def run_by_id(self, db: Session, flow_id: str, source_payload: dict, request_id: str) -> Run:
+        flow = db.query(Flow).filter(Flow.id == flow_id, Flow.is_enabled.is_(True)).first()
+        if not flow:
+            raise ValueError(f"Flow '{flow_id}' not found or disabled")
+        if not flow.source_endpoint.is_active or not flow.target_endpoint.is_active:
+            raise ValueError(f"Flow '{flow_id}' has inactive endpoints")
+
+        return await self.run_flow(db, flow, source_payload, request_id)
+
     async def run_flow(self, db: Session, flow: Flow, source_payload: dict, request_id: str) -> Run:
         started = _now()
         run = Run(

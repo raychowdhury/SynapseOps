@@ -15,6 +15,15 @@ export type Run = {
   finished_at?: string;
 };
 
+export type RunDetail = Run & {
+  flow_id: string;
+  http_status: number | null;
+  request_id: string;
+  source_payload: unknown;
+  mapped_payload: unknown;
+  target_response: unknown;
+};
+
 export type DeadLetter = {
   id: string;
   status: string;
@@ -95,18 +104,22 @@ export async function sendWebhook(
   payloadOrFlowId: Record<string, unknown> | string | number,
   payloadMaybe?: Record<string, unknown>,
 ): Promise<WebhookResponse> {
-  const payload =
-    typeof payloadOrFlowId === "object" && payloadOrFlowId !== null ? payloadOrFlowId : payloadMaybe || {};
+  const isPayloadOnly = typeof payloadOrFlowId === "object" && payloadOrFlowId !== null;
+  const payload = isPayloadOnly ? payloadOrFlowId : payloadMaybe || {};
+  const path = isPayloadOnly
+    ? "/api/v1/api-integration/webhooks/shopify/orders-create"
+    : `/api/v1/api-integration/webhooks/${payloadOrFlowId}`;
 
-  return request<WebhookResponse>("/api/v1/api-integration/webhooks/shopify/orders-create", {
+  return request<WebhookResponse>(path, {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function runFlow(flowId: string | number): Promise<WebhookResponse> {
+export async function runFlow(flowId: string | number, payload?: Record<string, unknown>): Promise<WebhookResponse> {
   return request<WebhookResponse>(`/api/v1/api-integration/flows/${flowId}/run`, {
     method: "POST",
+    body: JSON.stringify(payload || {}),
   });
 }
 
@@ -114,15 +127,16 @@ export async function getFlowRuns(flowId: string | number): Promise<Run[]> {
   return request<Run[]>(`/api/v1/api-integration/flows/${flowId}/runs`);
 }
 
+export async function getRunDetail(runId: string): Promise<RunDetail> {
+  return request<RunDetail>(`/api/v1/api-integration/ops/runs/${runId}`);
+}
+
 export async function getDeadLetters(): Promise<DeadLetter[]> {
-  return request<DeadLetter[]>("/api/v1/api-integration/ops/dead-letters");
+  return request<DeadLetter[]>("/api/v1/api-integration/dead-letters");
 }
 
 export async function replayDeadLetter(deadLetterId: string): Promise<{ run_id: string; status: string }> {
-  return request<{ run_id: string; status: string }>(
-    `/api/v1/api-integration/ops/dead-letters/${deadLetterId}/replay`,
-    {
-      method: "POST",
-    },
-  );
+  return request<{ run_id: string; status: string }>(`/api/v1/api-integration/dead-letters/${deadLetterId}/replay`, {
+    method: "POST",
+  });
 }

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Body, Depends, Request
 from sqlalchemy.orm import Session
-from app.services.api_integration.models import Flow, Endpoint, Mapping, Credential, Run, get_db
+from app.services.api_integration.models import Flow, Run, get_db
 from app.services.api_integration.errors import api_error
+from app.services.api_integration.services.flow_runner import flow_runner
+from app.services.api_integration.context import get_request_id
 
 router = APIRouter()
 
@@ -88,3 +90,27 @@ def list_flow_runs(flow_id: str, skip: int = 0, limit: int = 50, db: Session = D
         }
         for run in runs
     ]
+
+
+@router.post("/flows/{flow_id}/run", status_code=202)
+async def run_flow(
+    flow_id: str,
+    request: Request,
+    payload: dict | None = Body(default=None),
+    db: Session = Depends(get_db),
+):
+    request_id = get_request_id(request)
+
+    try:
+        run = await flow_runner.run_by_id(
+            db,
+            flow_id=flow_id,
+            source_payload=payload or {},
+            request_id=request_id,
+        )
+    except ValueError as exc:
+        raise api_error(404, "flow_not_found", str(exc))
+    except Exception as exc:
+        raise api_error(502, "flow_execution_failed", str(exc))
+
+    return {"run_id": run.id, "status": run.status, "flow_id": run.flow_id}

@@ -30,6 +30,7 @@ import RunHistoryTable from "@/components/api-integration/RunHistoryTable";
 import DeadLetterPanel from "@/components/api-integration/DeadLetterPanel";
 
 type UseCaseOption = {
+  rank: number;
   name: string;
   slug: string;
   demand: string;
@@ -44,30 +45,35 @@ type UseCaseDetail = {
 
 const useCaseOptions: UseCaseOption[] = [
   {
+    rank: 1,
     name: "E-commerce order sync",
     slug: "ecommerce-order-sync",
     demand: "Extremely High",
-    complexity: "Medium-High",
+    complexity: "Medium–High",
   },
   {
+    rank: 2,
     name: "Payment gateway integration",
     slug: "payment-gateway",
     demand: "Extremely High",
     complexity: "High",
   },
   {
+    rank: 3,
     name: "CRM automation",
     slug: "crm-automation",
     demand: "High",
     complexity: "Medium",
   },
   {
+    rank: 4,
     name: "SaaS notifications/workflows",
     slug: "saas-workflows",
     demand: "Very High",
-    complexity: "Low-Medium",
+    complexity: "Low–Medium",
   },
   {
+    rank: 5,
     name: "Data aggregation",
     slug: "data-aggregation",
     demand: "High",
@@ -588,29 +594,41 @@ export default function ApiIntegrationPage() {
           </div>
 
           <Dialog open={isUseCaseModalOpen} onOpenChange={setIsUseCaseModalOpen}>
-            <DialogContent className="sm:max-w-[560px]">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-[560px] border-2 border-primary/40 bg-background/95 shadow-[0_0_0_1px_rgba(99,102,241,0.35),0_28px_90px_rgba(0,0,0,0.75)]">
+              <DialogHeader className="border-b border-primary/25 pb-3">
                 <DialogTitle>Choose Integration Use Case</DialogTitle>
                 <DialogDescription>Select a use case from the dropdown to open its dedicated page.</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4">
                 <Select value={pendingUseCaseSlug} onValueChange={setPendingUseCaseSlug}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-13 border-2 border-primary/55 bg-card/70 shadow-[0_0_0_1px_rgba(99,102,241,0.25)]">
                     <SelectValue placeholder="Select a use case" />
                   </SelectTrigger>
                   <SelectContent>
                     {useCaseOptions.map((useCase) => (
                       <SelectItem key={useCase.slug} value={useCase.slug}>
-                        {useCase.name}
+                        <div className="flex w-full min-w-[340px] items-center justify-between gap-2 pr-2">
+                          <span className="truncate text-sm">#{useCase.rank} {useCase.name}</span>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <Badge variant="outline" className={demandBadgeClass(useCase.demand)}>
+                              {useCase.demand}
+                            </Badge>
+                            <Badge variant="outline" className={complexityBadgeClass(useCase.complexity)}>
+                              {useCase.complexity}
+                            </Badge>
+                          </div>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
                 {pendingUseCase ? (
-                  <div className="rounded-lg border border-border bg-card px-4 py-3">
-                    <p className="text-sm font-medium text-foreground">{pendingUseCase.name}</p>
+                  <div className="rounded-lg border-2 border-primary/30 bg-card/85 px-4 py-3 shadow-[0_0_0_1px_rgba(99,102,241,0.16)]">
+                    <p className="text-sm font-medium text-foreground">
+                      #{pendingUseCase.rank} {pendingUseCase.name}
+                    </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge variant="outline" className={demandBadgeClass(pendingUseCase.demand)}>
                         {pendingUseCase.demand}
@@ -624,7 +642,7 @@ export default function ApiIntegrationPage() {
                 ) : null}
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="border-t border-primary/20 pt-3">
                 <Button variant="outline" onClick={() => setIsUseCaseModalOpen(false)}>
                   Cancel
                 </Button>

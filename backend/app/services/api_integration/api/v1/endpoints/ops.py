@@ -53,6 +53,7 @@ def get_run(run_id: str, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/dead-letters")
 @router.get("/ops/dead-letters")
 def list_dead_letters(status: str | None = None, db: Session = Depends(get_db)):
     query = db.query(DeadLetter).order_by(DeadLetter.created_at.desc())
@@ -77,6 +78,7 @@ def list_dead_letters(status: str | None = None, db: Session = Depends(get_db)):
     ]
 
 
+@router.post("/dead-letters/{dead_letter_id}/replay")
 @router.post("/ops/dead-letters/{dead_letter_id}/replay")
 async def replay_dead_letter(dead_letter_id: str, request: Request, db: Session = Depends(get_db)):
     dead_letter = db.query(DeadLetter).filter(DeadLetter.id == dead_letter_id).first()
