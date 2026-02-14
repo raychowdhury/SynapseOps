@@ -3,19 +3,25 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKEND_BIN="$ROOT_DIR/.venv/bin/uvicorn"
-FRONTEND_DIR="$ROOT_DIR/synaptiq-connect"
+BACKEND_DIR="$ROOT_DIR/backend"
+FRONTEND_DIR="$ROOT_DIR/frontend"
 BACKEND_PORT="${BACKEND_PORT:-8000}"
 FRONTEND_PORT="${FRONTEND_PORT:-8080}"
 
 if [[ ! -x "$BACKEND_BIN" ]]; then
   echo "Missing backend runtime: $BACKEND_BIN"
-  echo "Run: ./.venv/bin/pip install -r requirements.txt"
+  echo "Run: ./.venv/bin/pip install -r backend/requirements.txt"
+  exit 1
+fi
+
+if [[ ! -d "$BACKEND_DIR" ]]; then
+  echo "Missing backend directory: $BACKEND_DIR"
   exit 1
 fi
 
 if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
   echo "Missing frontend dependencies: $FRONTEND_DIR/node_modules"
-  echo "Run: cd synaptiq-connect && npm install"
+  echo "Run: cd frontend && npm install"
   exit 1
 fi
 
@@ -48,7 +54,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 (
-  cd "$ROOT_DIR"
+  cd "$BACKEND_DIR"
   "$BACKEND_BIN" app.main:app --reload --host 127.0.0.1 --port "$BACKEND_PORT"
 ) &
 BACKEND_PID=$!

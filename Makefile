@@ -6,7 +6,7 @@ dev:
 	@./scripts/dev.sh
 
 dev-backend:
-	@./.venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+	@cd backend && ../.venv/bin/uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 dev-frontend:
-	@cd synaptiq-connect && npm run dev
+	@cd frontend && npm run dev
