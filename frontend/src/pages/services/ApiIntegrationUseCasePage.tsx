@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   type DeadLetter,
   type FlowSummary,
@@ -30,6 +31,7 @@ import RunHistoryTable from "@/components/api-integration/RunHistoryTable";
 import DeadLetterPanel from "@/components/api-integration/DeadLetterPanel";
 
 type UseCaseOption = {
+  rank: number;
   name: string;
   slug: string;
   demand: string;
@@ -40,15 +42,17 @@ type UseCaseOption = {
 
 const useCaseOptions: UseCaseOption[] = [
   {
+    rank: 1,
     name: "E-commerce order sync",
     slug: "ecommerce-order-sync",
     demand: "Extremely High",
-    complexity: "Medium-High",
+    complexity: "Medium–High",
     headline: "E-commerce Order Sync MVP",
     description:
       "Receive Shopify order webhooks, map payloads to ERP schema, run resilient delivery with retries, and operate with run history plus dead-letter replay.",
   },
   {
+    rank: 2,
     name: "Payment gateway integration",
     slug: "payment-gateway",
     demand: "Extremely High",
@@ -57,6 +61,7 @@ const useCaseOptions: UseCaseOption[] = [
     description: "MVP implementation is planned next for this use case.",
   },
   {
+    rank: 3,
     name: "CRM automation",
     slug: "crm-automation",
     demand: "High",
@@ -65,20 +70,48 @@ const useCaseOptions: UseCaseOption[] = [
     description: "MVP implementation is planned next for this use case.",
   },
   {
+    rank: 4,
     name: "SaaS notifications/workflows",
     slug: "saas-workflows",
     demand: "Very High",
-    complexity: "Low-Medium",
+    complexity: "Low–Medium",
     headline: "SaaS Notifications/Workflows",
     description: "MVP implementation is planned next for this use case.",
   },
   {
+    rank: 5,
     name: "Data aggregation",
     slug: "data-aggregation",
     demand: "High",
     complexity: "High",
     headline: "Data Aggregation",
     description: "MVP implementation is planned next for this use case.",
+  },
+];
+
+const ecommerceConnectSteps = [
+  {
+    title: "1. Configure Shopify Webhook",
+    detail:
+      "In Shopify Admin, create an orders/create webhook and point it to your API Integration ingress endpoint for this environment.",
+    value: "POST /api/v1/api-integration/webhooks/shopify/orders-create",
+  },
+  {
+    title: "2. Confirm Flow + ERP Auth",
+    detail:
+      "Make sure flow 'Shopify -> ERP Order Sync' is enabled and ERP credentials are valid (API key, bearer token, or OAuth2 client credentials).",
+    value: "GET /api/v1/api-integration/flows",
+  },
+  {
+    title: "3. Send a Test Order",
+    detail: "Use the simulator below to post a sample order payload and trigger a full map + delivery execution.",
+    value: "Webhook Simulator",
+  },
+  {
+    title: "4. Verify + Recover",
+    detail:
+      "Review run status and latency in Run History. If a delivery fails, replay it from Dead Letter Queue after fixing destination issues.",
+    value: "Run History + DLQ Replay",
   },
 ];
 
@@ -274,20 +307,94 @@ export default function ApiIntegrationUseCasePage() {
               </Badge>
             </div>
             <h1 className="text-[clamp(1.8rem,3.5vw,2.6rem)] font-extrabold tracking-tight text-foreground">
-              {selectedUseCase.headline}
+              #{selectedUseCase.rank} {selectedUseCase.headline}
             </h1>
             <p className="text-base text-text-2 leading-relaxed font-light mt-3 max-w-[760px]">
               {selectedUseCase.description}
             </p>
           </div>
 
-          <div className="rounded-lg border border-border bg-card px-4 py-3">
-            <p className="text-sm font-medium text-foreground">Current Path</p>
-            <p className="text-xs text-text-2 mt-1">/services/api-integration/{selectedUseCase.slug}</p>
-          </div>
-
           {isEcommerceOrderSync ? (
             <div className="space-y-6">
+              <Card className="bg-card border-border">
+                <CardHeader>
+                  <CardTitle>How To Connect Shopify To ERP</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-text-2">
+                    Complete these steps before go-live, then use the simulator to validate the end-to-end integration path.
+                  </p>
+
+                  <div className="rounded-xl border border-primary/30 bg-background/40 p-4">
+                    <p className="text-xs uppercase tracking-wide text-primary-light mb-3">Connection Infographic</p>
+                    <div className="grid gap-3 md:grid-cols-[1fr_auto_1.2fr_auto_1fr] md:items-stretch">
+                      <div
+                        className="rounded-lg border border-border bg-card/80 p-3 opacity-0 animate-[slideIn_520ms_ease-out_forwards]"
+                        style={{ animationDelay: "80ms" }}
+                      >
+                        <p className="text-xs text-text-2 mb-2">Source</p>
+                        <p className="text-sm font-semibold text-foreground">Shopify Orders Webhook</p>
+                        <p className="mt-2 text-xs font-mono text-primary-light">orders/create</p>
+                      </div>
+
+                      <div
+                        className="hidden md:flex items-center justify-center opacity-0 animate-[fadeInUp_520ms_ease-out_forwards]"
+                        style={{ animationDelay: "180ms" }}
+                      >
+                        <div className="relative h-1 w-14 overflow-hidden rounded-full bg-primary/20">
+                          <span className="flow-pulse bg-primary-light" />
+                        </div>
+                      </div>
+
+                      <div
+                        className="rounded-lg border border-primary/35 bg-primary/5 p-3 opacity-0 animate-[fadeInUp_520ms_ease-out_forwards]"
+                        style={{ animationDelay: "280ms" }}
+                      >
+                        <p className="text-xs text-primary-light mb-2">SynapseOps API Integration</p>
+                        <div className="space-y-1.5 text-xs text-foreground">
+                          <p>Webhook ingest + request ID</p>
+                          <p>Payload mapping (Shopify -&gt; ERP schema)</p>
+                          <p>Auth + delivery (retry/backoff/circuit)</p>
+                          <p>Run history + dead-letter safety</p>
+                        </div>
+                      </div>
+
+                      <div
+                        className="hidden md:flex items-center justify-center opacity-0 animate-[fadeInUp_520ms_ease-out_forwards]"
+                        style={{ animationDelay: "380ms" }}
+                      >
+                        <div className="relative h-1 w-14 overflow-hidden rounded-full bg-primary/20">
+                          <span className="flow-pulse bg-primary-light" />
+                        </div>
+                      </div>
+
+                      <div
+                        className="rounded-lg border border-border bg-card/80 p-3 opacity-0 animate-[fadeInUp_520ms_ease-out_forwards]"
+                        style={{ animationDelay: "480ms" }}
+                      >
+                        <p className="text-xs text-text-2 mb-2">Destination</p>
+                        <p className="text-sm font-semibold text-foreground">ERP REST API (Demo Receiver)</p>
+                        <p className="mt-2 text-xs font-mono text-primary-light">POST /api/v1/api-integration/mock/erp/orders</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {ecommerceConnectSteps.map((step, index) => (
+                      <div
+                        key={step.title}
+                        className="rounded-lg border border-border bg-background/40 p-3 opacity-0 animate-[fadeInUp_520ms_ease-out_forwards]"
+                        style={{ animationDelay: `${620 + index * 90}ms` }}
+                      >
+                        <p className="text-sm font-semibold text-foreground mb-1">{step.title}</p>
+                        <p className="text-xs text-text-2 leading-relaxed">{step.detail}</p>
+                        <p className="mt-2 text-xs font-mono text-primary-light">{step.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
               {flowError ? (
                 <Card className="bg-card border-border">
                   <CardContent className="pt-6">
@@ -303,15 +410,29 @@ export default function ApiIntegrationUseCasePage() {
                 response={webhookResponse}
                 error={webhookError}
               />
-              <RunHistoryTable runs={runs} loading={runsLoading} error={runsError} onRefresh={refreshRuns} />
-              <DeadLetterPanel
-                items={deadLetters}
-                loading={deadLettersLoading}
-                error={deadLettersError}
-                replayingId={replayingId}
-                onRefresh={refreshDeadLetters}
-                onReplay={handleReplayDeadLetter}
-              />
+              <Accordion type="multiple" className="rounded-xl border border-border bg-card/40 px-4">
+                <AccordionItem value="run-history" className="border-border">
+                  <AccordionTrigger className="text-sm font-semibold hover:no-underline">Run History</AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <RunHistoryTable runs={runs} loading={runsLoading} error={runsError} onRefresh={refreshRuns} />
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="dead-letter-queue" className="border-none">
+                  <AccordionTrigger className="text-sm font-semibold hover:no-underline">
+                    Dead Letter Queue
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <DeadLetterPanel
+                      items={deadLetters}
+                      loading={deadLettersLoading}
+                      error={deadLettersError}
+                      replayingId={replayingId}
+                      onRefresh={refreshDeadLetters}
+                      onReplay={handleReplayDeadLetter}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           ) : (
             <Card className="bg-card border-border">
@@ -346,7 +467,9 @@ export default function ApiIntegrationUseCasePage() {
                   >
                     <div className="flex w-full items-center justify-between gap-3">
                       <div className="text-left">
-                        <p className="text-sm font-semibold text-foreground">{useCase.name}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          #{useCase.rank} {useCase.name}
+                        </p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <Badge variant="outline" className={demandBadgeClass(useCase.demand)}>

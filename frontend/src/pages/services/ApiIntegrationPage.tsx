@@ -30,6 +30,7 @@ import RunHistoryTable from "@/components/api-integration/RunHistoryTable";
 import DeadLetterPanel from "@/components/api-integration/DeadLetterPanel";
 
 type UseCaseOption = {
+  rank: number;
   name: string;
   slug: string;
   demand: string;
@@ -44,30 +45,35 @@ type UseCaseDetail = {
 
 const useCaseOptions: UseCaseOption[] = [
   {
+    rank: 1,
     name: "E-commerce order sync",
     slug: "ecommerce-order-sync",
     demand: "Extremely High",
-    complexity: "Medium-High",
+    complexity: "Medium–High",
   },
   {
+    rank: 2,
     name: "Payment gateway integration",
     slug: "payment-gateway",
     demand: "Extremely High",
     complexity: "High",
   },
   {
+    rank: 3,
     name: "CRM automation",
     slug: "crm-automation",
     demand: "High",
     complexity: "Medium",
   },
   {
+    rank: 4,
     name: "SaaS notifications/workflows",
     slug: "saas-workflows",
     demand: "Very High",
-    complexity: "Low-Medium",
+    complexity: "Low–Medium",
   },
   {
+    rank: 5,
     name: "Data aggregation",
     slug: "data-aggregation",
     demand: "High",
@@ -204,6 +210,35 @@ const connectedSystems = [
   "SaaS Apps",
   "Data Warehouses",
   "Operational Databases",
+];
+
+const integrationSources = ["Shopify", "Webhook Sources", "SaaS Apps"];
+
+const integrationTargets = [
+  "ERP REST APIs",
+  "CRM Platforms",
+  "Payment Gateways",
+  "Data Warehouses",
+  "Operational Databases",
+];
+
+const integrationFlowSteps = [
+  {
+    title: "1. Ingest",
+    description: "Accept webhook or API events with endpoint-level auth and schema checks.",
+  },
+  {
+    title: "2. Normalize",
+    description: "Map source payloads into a deterministic canonical contract.",
+  },
+  {
+    title: "3. Deliver",
+    description: "Route transformed payloads to destination APIs with retries and breaker controls.",
+  },
+  {
+    title: "4. Operate",
+    description: "Track run history, dead letters, and replay failures without data loss.",
+  },
 ];
 
 const defaultRealWorldUseCases = [
@@ -441,6 +476,69 @@ export default function ApiIntegrationPage() {
             </div>
           </div>
 
+          <div className="mb-16">
+            <h2 className="text-xl font-bold tracking-tight mb-3 text-foreground">How it connects</h2>
+            <p className="text-sm text-text-2 mb-5 leading-relaxed">
+              SynapseOps sits between your source events and destination systems, applying auth, mapping, resilience controls,
+              and ops visibility on every API transaction.
+            </p>
+
+            <div className="rounded-2xl border border-border bg-card/60 p-4 md:p-6">
+              <div className="grid gap-4 md:grid-cols-[1fr_auto_1.2fr_auto_1fr] md:items-stretch">
+                <Card className="bg-background/40 border-border">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-text-2 mb-3">Inbound Sources</p>
+                    <div className="space-y-2">
+                      {integrationSources.map((source) => (
+                        <div key={source} className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground">
+                          {source}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="hidden md:flex items-center justify-center text-lg font-bold text-text-2">{"->"}</div>
+
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-primary-light mb-2">SynapseOps API Integration Layer</p>
+                    <div className="space-y-2 text-sm text-foreground">
+                      <p>Auth adapters: API keys, bearer, OAuth2</p>
+                      <p>Mapping engine: schema transform + validation</p>
+                      <p>Resilience: retry, circuit breaker, dead-letter queue</p>
+                      <p>Observability: run history, status, replay controls</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="hidden md:flex items-center justify-center text-lg font-bold text-text-2">{"->"}</div>
+
+                <Card className="bg-background/40 border-border">
+                  <CardContent className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-text-2 mb-3">Connected Destinations</p>
+                    <div className="space-y-2">
+                      {integrationTargets.map((target) => (
+                        <div key={target} className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground">
+                          {target}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="mt-5 grid gap-2 md:grid-cols-4">
+                {integrationFlowSteps.map((step) => (
+                  <div key={step.title} className="rounded-lg border border-border bg-card px-3 py-2">
+                    <p className="text-xs font-semibold text-foreground mb-1">{step.title}</p>
+                    <p className="text-xs text-text-2 leading-relaxed">{step.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <div ref={useCasesRef} className="reveal-element mb-16">
             <h2 className="text-xl font-bold tracking-tight mb-6 text-foreground">Real-world use cases</h2>
             <div className="space-y-4">
@@ -496,29 +594,41 @@ export default function ApiIntegrationPage() {
           </div>
 
           <Dialog open={isUseCaseModalOpen} onOpenChange={setIsUseCaseModalOpen}>
-            <DialogContent className="sm:max-w-[560px]">
-              <DialogHeader>
+            <DialogContent className="sm:max-w-[560px] border-2 border-primary/40 bg-background/95 shadow-[0_0_0_1px_rgba(99,102,241,0.35),0_28px_90px_rgba(0,0,0,0.75)]">
+              <DialogHeader className="border-b border-primary/25 pb-3">
                 <DialogTitle>Choose Integration Use Case</DialogTitle>
                 <DialogDescription>Select a use case from the dropdown to open its dedicated page.</DialogDescription>
               </DialogHeader>
 
               <div className="space-y-4">
                 <Select value={pendingUseCaseSlug} onValueChange={setPendingUseCaseSlug}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-13 border-2 border-primary/55 bg-card/70 shadow-[0_0_0_1px_rgba(99,102,241,0.25)]">
                     <SelectValue placeholder="Select a use case" />
                   </SelectTrigger>
                   <SelectContent>
                     {useCaseOptions.map((useCase) => (
                       <SelectItem key={useCase.slug} value={useCase.slug}>
-                        {useCase.name}
+                        <div className="flex w-full min-w-[340px] items-center justify-between gap-2 pr-2">
+                          <span className="truncate text-sm">#{useCase.rank} {useCase.name}</span>
+                          <div className="flex shrink-0 items-center gap-1.5">
+                            <Badge variant="outline" className={demandBadgeClass(useCase.demand)}>
+                              {useCase.demand}
+                            </Badge>
+                            <Badge variant="outline" className={complexityBadgeClass(useCase.complexity)}>
+                              {useCase.complexity}
+                            </Badge>
+                          </div>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
                 {pendingUseCase ? (
-                  <div className="rounded-lg border border-border bg-card px-4 py-3">
-                    <p className="text-sm font-medium text-foreground">{pendingUseCase.name}</p>
+                  <div className="rounded-lg border-2 border-primary/30 bg-card/85 px-4 py-3 shadow-[0_0_0_1px_rgba(99,102,241,0.16)]">
+                    <p className="text-sm font-medium text-foreground">
+                      #{pendingUseCase.rank} {pendingUseCase.name}
+                    </p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge variant="outline" className={demandBadgeClass(pendingUseCase.demand)}>
                         {pendingUseCase.demand}
@@ -532,7 +642,7 @@ export default function ApiIntegrationPage() {
                 ) : null}
               </div>
 
-              <DialogFooter>
+              <DialogFooter className="border-t border-primary/20 pt-3">
                 <Button variant="outline" onClick={() => setIsUseCaseModalOpen(false)}>
                   Cancel
                 </Button>
