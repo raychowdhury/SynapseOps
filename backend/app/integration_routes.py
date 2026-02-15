@@ -59,11 +59,23 @@ def get_project(project_id: str, db: Session = Depends(get_db)):
     return project
 
 
+from app.services.ai_service import AIService
+
+ai_service = AIService()
+
 @projects_router.post("/{project_id}/blueprints", response_model=BlueprintOut, status_code=201)
-def create_blueprint(project_id: str, payload: BlueprintCreate, db: Session = Depends(get_db)):
+async def create_blueprint(project_id: str, payload: BlueprintCreate, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+
+    # If mapping intent is provided but config is empty, use AI to generate config
+    config = payload.config
+    if payload.mapping_intent and not config:
+        # Note: In a real app we'd fetch source/target schemas here
+        config = await ai_service.generate_mapping_blueprint(
+            payload.mapping_intent, {}, {}
+        )
 
     blueprint = Blueprint(
         project_id=project_id,
@@ -72,7 +84,7 @@ def create_blueprint(project_id: str, payload: BlueprintCreate, db: Session = De
         source_system=payload.source_system,
         target_system=payload.target_system,
         mapping_intent=payload.mapping_intent,
-        config=payload.config,
+        config=config,
     )
     db.add(blueprint)
     db.commit()
