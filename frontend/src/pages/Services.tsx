@@ -95,6 +95,16 @@ const services = [
     accentColor: "hsl(var(--warm))",
     tag: "Automation",
   },
+  {
+    slug: "saas-notifications",
+    icon: "NTF",
+    title: "SaaS Notifications",
+    desc: "Connect SaaS platforms like Slack, Teams, and Salesforce to trigger real-time notifications, message flows, and approval workflows. Build multi-step workflows with conditions and human approvals.",
+    features: ["Slack & Teams", "Salesforce Chatter", "Approval Workflows", "Real-time Dispatch"],
+    colorClass: "bg-primary/10 text-primary-light",
+    accentColor: "hsl(var(--primary-light))",
+    tag: "Notifications",
+  },
 ];
 
 const ServiceCard = ({ service }: { service: typeof services[0] }) => {

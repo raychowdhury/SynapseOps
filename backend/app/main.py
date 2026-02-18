@@ -10,6 +10,8 @@ from app.database import engine, Base, SessionLocal
 from app.services.api_integration.api.v1.router import router as api_integration_router
 from app.services.api_integration.seed import seed_local_demo_flow
 from app.services.api_integration import models as api_integration_models  # noqa: F401
+from app.services.notifications import models as notification_models  # noqa: F401
+from app.services.notifications.routes import router as notifications_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,6 +29,7 @@ app.include_router(jobs_router)
 app.include_router(projects_router)
 app.include_router(blueprints_router)
 app.include_router(api_integration_router)
+app.include_router(notifications_router)
 
 
 @app.middleware("http")
@@ -81,8 +84,11 @@ def health():
 
 @app.on_event("startup")
 def startup_seed():
+    from app.services.api_integration.seed import seed_local_demo_flow
+    from app.services.notifications.seed import seed_notifications
     db = SessionLocal()
     try:
         seed_local_demo_flow(db)
+        seed_notifications(db)
     finally:
         db.close()

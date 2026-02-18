@@ -9,6 +9,9 @@ import Services from "./pages/Services";
 import ServiceDetail from "./pages/ServiceDetail";
 import ApiIntegrationPage from "./pages/services/ApiIntegrationPage";
 import ApiIntegrationUseCasePage from "./pages/services/ApiIntegrationUseCasePage";
+import SaasNotificationsPage from "./pages/services/SaasNotificationsPage";
+import WorkflowBuilderPage from "./pages/services/WorkflowBuilderPage";
+import ChannelConfigPage from "./pages/services/ChannelConfigPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/services" element={<Services />} />
           <Route path="/services/api-integration" element={<ApiIntegrationPage />} />
+          <Route path="/services/api-integration/saas-workflows" element={<SaasNotificationsPage />} />
+          <Route path="/services/api-integration/saas-workflows/workflow-builder" element={<WorkflowBuilderPage />} />
+          <Route path="/services/api-integration/saas-workflows/channels" element={<ChannelConfigPage />} />
           <Route path="/services/api-integration/:useCaseSlug" element={<ApiIntegrationUseCasePage />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="*" element={<NotFound />} />
