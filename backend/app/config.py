@@ -1,9 +1,0 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./synapseops.db")
-REDIS_URL = os.getenv("REDIS_URL", "")
-SECRET_KEY = os.getenv("SECRET_KEY", "change-me-in-production")
-USE_CELERY = bool(REDIS_URL)
