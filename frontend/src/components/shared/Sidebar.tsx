@@ -40,12 +40,12 @@ const buildNavigation = (dlqTotal: number): NavCategory[] => [
         title: "Core Systems",
         items: [
             { label: "API Flows", icon: <Workflow className="w-4 h-4" />, path: "/services/api-integration" },
-            { label: "Webhooks", icon: <Webhook className="w-4 h-4" />, path: "/services/api-integration/ecommerce-order-sync" },
         ],
     },
     {
         title: "Specialized Hubs",
         items: [
+            { label: "Webhooks", icon: <Webhook className="w-4 h-4" />, path: "/services/api-integration/ecommerce-order-sync" },
             { label: "Payments", icon: <CreditCard className="w-4 h-4" />, path: "/services/api-integration/payment-gateway" },
             { label: "CRM", icon: <Users className="w-4 h-4" />, path: "/services/api-integration/crm-automation" },
             { label: "Data", icon: <Database className="w-4 h-4" />, path: "/services/api-integration/data-aggregation" },
@@ -120,8 +120,8 @@ export default function Sidebar({ dlqTotal = 0 }: SidebarProps) {
                                         <button
                                             onClick={() => navigate(item.path)}
                                             className={`w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 group ${isActive
-                                                    ? "bg-white/[0.06] text-white shadow-sm"
-                                                    : "text-slate-400 hover:text-white hover:bg-white/[0.03]"
+                                                ? "bg-white/[0.06] text-white shadow-sm"
+                                                : "text-slate-400 hover:text-white hover:bg-white/[0.03]"
                                                 }`}
                                             title={collapsed ? item.label : undefined}
                                         >
