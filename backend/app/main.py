@@ -10,6 +10,14 @@ from app.database import engine, Base, SessionLocal
 from app.services.api_integration.api.v1.router import router as api_integration_router
 from app.services.api_integration.seed import seed_local_demo_flow
 from app.services.api_integration import models as api_integration_models  # noqa: F401
+from app.services.notifications import models as notification_models  # noqa: F401
+from app.services.notifications.routes import router as notifications_router
+from app.services.payment_gateway import models as payment_gateway_models  # noqa: F401
+from app.services.payment_gateway.routes import router as payment_gateway_router
+from app.services.crm_automation import models as crm_automation_models  # noqa: F401
+from app.services.crm_automation.routes import router as crm_automation_router
+from app.services.data_aggregation import models as data_aggregation_models  # noqa: F401
+from app.services.data_aggregation.routes import router as data_aggregation_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -27,6 +35,10 @@ app.include_router(jobs_router)
 app.include_router(projects_router)
 app.include_router(blueprints_router)
 app.include_router(api_integration_router)
+app.include_router(notifications_router)
+app.include_router(payment_gateway_router)
+app.include_router(crm_automation_router)
+app.include_router(data_aggregation_router)
 
 
 @app.middleware("http")
@@ -81,8 +93,17 @@ def health():
 
 @app.on_event("startup")
 def startup_seed():
+    from app.services.api_integration.seed import seed_local_demo_flow
+    from app.services.notifications.seed import seed_notifications
+    from app.services.payment_gateway.seed import seed_payment_gateway
+    from app.services.crm_automation.seed import seed_crm_automation
+    from app.services.data_aggregation.seed import seed_data_aggregation
     db = SessionLocal()
     try:
         seed_local_demo_flow(db)
+        seed_notifications(db)
+        seed_payment_gateway(db)
+        seed_crm_automation(db)
+        seed_data_aggregation(db)
     finally:
         db.close()
