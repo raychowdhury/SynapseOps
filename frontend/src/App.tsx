@@ -12,6 +12,7 @@ import ApiIntegrationUseCasePage from "./pages/services/ApiIntegrationUseCasePag
 import SaasNotificationsPage from "./pages/services/SaasNotificationsPage";
 import WorkflowBuilderPage from "./pages/services/WorkflowBuilderPage";
 import ChannelConfigPage from "./pages/services/ChannelConfigPage";
+import PaymentGatewayPage from "./pages/services/PaymentGatewayPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/services/api-integration/saas-workflows" element={<SaasNotificationsPage />} />
           <Route path="/services/api-integration/saas-workflows/workflow-builder" element={<WorkflowBuilderPage />} />
           <Route path="/services/api-integration/saas-workflows/channels" element={<ChannelConfigPage />} />
+          <Route path="/services/api-integration/payment-gateway" element={<PaymentGatewayPage />} />
           <Route path="/services/api-integration/:useCaseSlug" element={<ApiIntegrationUseCasePage />} />
           <Route path="/services/:slug" element={<ServiceDetail />} />
           <Route path="*" element={<NotFound />} />

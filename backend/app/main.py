@@ -12,6 +12,8 @@ from app.services.api_integration.seed import seed_local_demo_flow
 from app.services.api_integration import models as api_integration_models  # noqa: F401
 from app.services.notifications import models as notification_models  # noqa: F401
 from app.services.notifications.routes import router as notifications_router
+from app.services.payment_gateway import models as payment_gateway_models  # noqa: F401
+from app.services.payment_gateway.routes import router as payment_gateway_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -30,6 +32,7 @@ app.include_router(projects_router)
 app.include_router(blueprints_router)
 app.include_router(api_integration_router)
 app.include_router(notifications_router)
+app.include_router(payment_gateway_router)
 
 
 @app.middleware("http")
@@ -86,9 +89,11 @@ def health():
 def startup_seed():
     from app.services.api_integration.seed import seed_local_demo_flow
     from app.services.notifications.seed import seed_notifications
+    from app.services.payment_gateway.seed import seed_payment_gateway
     db = SessionLocal()
     try:
         seed_local_demo_flow(db)
         seed_notifications(db)
+        seed_payment_gateway(db)
     finally:
         db.close()
