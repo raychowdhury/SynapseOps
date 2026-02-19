@@ -15,6 +15,9 @@ import ChannelConfigPage from "./pages/services/ChannelConfigPage";
 import PaymentGatewayPage from "./pages/services/PaymentGatewayPage";
 import CrmAutomationPage from "./pages/services/CrmAutomationPage";
 import DataAggregationPage from "./pages/services/DataAggregationPage";
+import StrategyPage from "./pages/StrategyPage";
+import SecuritySettingsPage from "./pages/SecuritySettingsPage";
+import DLQObserverPage from "./pages/DLQObserverPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +32,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/strategy" element={<StrategyPage />} />
+          <Route path="/security" element={<SecuritySettingsPage />} />
+          <Route path="/admin/dlq" element={<DLQObserverPage />} />
+
           <Route path="/services/api-integration" element={<ApiIntegrationPage />} />
           <Route path="/services/api-integration/saas-workflows" element={<SaasNotificationsPage />} />
           <Route path="/services/api-integration/saas-workflows/workflow-builder" element={<WorkflowBuilderPage />} />

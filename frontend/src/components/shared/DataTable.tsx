@@ -17,6 +17,7 @@ interface DataTableProps<T> {
     title?: string;
     subtitle?: string;
     titleIcon?: React.ReactNode;
+    isLoading?: boolean;
 }
 
 export default function DataTable<T>({
@@ -28,6 +29,7 @@ export default function DataTable<T>({
     title,
     subtitle,
     titleIcon,
+    isLoading = false,
 }: DataTableProps<T>) {
     const borderColor = variant === "danger" ? "border-red-900/30" : "border-white/[0.06]";
     const bgColor = variant === "danger" ? "bg-red-950/10" : "bg-white/[0.02]";
@@ -70,9 +72,20 @@ export default function DataTable<T>({
                             ))}
                         </tr>
                     </thead>
-                    <tbody className={`divide-y ${variant === "danger" ? "divide-red-900/10" : "divide-white/[0.03]"}`}>
+                    <tbody className={`divide-y ${variant === "danger" ? "divide-red-900/10" : "divide-white/[0.03]"} relative`}>
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px] flex items-center justify-center z-10">
+                                <motion.div
+                                    animate={{ opacity: [0.4, 0.7, 0.4] }}
+                                    transition={{ duration: 1.5, repeat: Infinity }}
+                                    className="text-xs font-bold uppercase tracking-widest text-slate-500"
+                                >
+                                    Loading Data...
+                                </motion.div>
+                            </div>
+                        )}
                         {data.map((row, idx) => (
-                            <tr key={keyExtractor(row)} className={`${rowHover} transition-colors`}>
+                            <tr key={keyExtractor(row)} className={`${rowHover} transition-colors ${isLoading ? 'opacity-20 select-none pointer-events-none' : ''}`}>
                                 {columns.map((col) => (
                                     <td
                                         key={col.key}
@@ -83,7 +96,7 @@ export default function DataTable<T>({
                                 ))}
                             </tr>
                         ))}
-                        {data.length === 0 && (
+                        {!isLoading && data.length === 0 && (
                             <tr>
                                 <td colSpan={columns.length} className={`text-center py-14 ${emptyColor}`}>
                                     {emptyMessage}
