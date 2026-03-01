@@ -143,9 +143,9 @@ const useCaseDetails: Record<string, UseCaseDetail> = {
     ],
   },
   "saas-workflows": {
-    headline: "SaaS notifications and workflows in one service layer.",
+    headline: "Real-time SaaS notifications and integrated workflows.",
     description:
-      "Trigger and orchestrate SaaS actions with webhook ingestion, outbound API control, and resilience built for production events.",
+      "Trigger and orchestrate SaaS actions with webhook ingestion and outbound API control. Integration failures now trigger real-time alerts via Slack and Teams.",
     scenarios: [
       {
         scenario: "Notification fan-out",

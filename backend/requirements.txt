@@ -7,3 +7,5 @@ openapi-spec-validator
 pytest
 httpx
 python-dotenv
+slowapi
+requests

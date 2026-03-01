@@ -109,6 +109,28 @@ class FlowRunner:
             )
             db.add(dlq_entry)
             db.commit()
+
+            # Trigger SaaS Notification for system alert
+            try:
+                from app.services.notifications.services.bridge import notification_bridge
+                notification_bridge.trigger_system_alert(
+                    db, 
+                    alert_type="integration_failure",
+                    payload={
+                        "title": f"Integration Failure: {flow.name}",
+                        "body": f"Flow '{flow.name}' failed with error: {str(exc)}. Event moved to DLQ.",
+                        "priority": "high",
+                        "metadata": {
+                            "flow_id": flow.id,
+                            "run_id": run.id,
+                            "error": str(exc)
+                        }
+                    }
+                )
+            except Exception as e:
+                # Silently fail if notification bridge fails to avoid masking original error
+                print(f"Failed to trigger notification: {e}")
+
             raise
 
     async def replay_dead_letter(self, db: Session, dead_letter: DeadLetter, request_id: str) -> Run:
